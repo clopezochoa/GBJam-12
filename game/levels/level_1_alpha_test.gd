@@ -20,20 +20,20 @@ func _ready() -> void:
 	$Player.connect("defeated", self._on_defeat)
 	$Player.connect("player_update_position", self._on_player_move)
 	$Player.connect("on_meteor_deleted", self._on_meteor_deleted)	
-	$Areas/Threshhold_1_easy.connect("area_entered",self._on_player_reach_difficlty_area_1)
-	$Areas/Threshhold_2_medium.connect("area_entered",self._on_player_reach_difficlty_area_2)
-	$Areas/Threshhold_3_hard.connect("area_entered",self._on_player_reach_difficlty_area_3)
-	$Areas/Threshhold_4_very_hard.connect("area_entered",self._on_player_reach_difficlty_area_4)
-	$Areas/Shelter.connect("area_entered",self._on_player_win)
+	#$Areas/Threshhold_1_easy.connect("area_entered",self._on_player_reach_difficlty_area_1)
+	#$Areas/Threshhold_2_medium.connect("area_entered",self._on_player_reach_difficlty_area_2)
+	#$Areas/Threshhold_3_hard.connect("area_entered",self._on_player_reach_difficlty_area_3)
+	#$Areas/Threshhold_4_very_hard.connect("area_entered",self._on_player_reach_difficlty_area_4)
+	#$Areas/Shelter.connect("area_entered",self._on_player_win)
 	$Player.position.x = 0
 	
-	var projectile_node = $Player/projectile_spawner
-	projectile_node.position.x = 0
-	projectile_node.position.y = 0
-	projectile_node.connect("projectile_spawned", self._on_projectile_spawner_projectile_spawned)
-	
-	var power_ups_spawner = $power_ups_spawner
-	power_ups_spawner.connect("power_up_spawn", self._on_power_up_spawn)
+	#var projectile_node = $Player/projectile_spawner
+	#projectile_node.position.x = 0
+	#projectile_node.position.y = 0
+	#projectile_node.connect("projectile_spawned", self._on_projectile_spawner_projectile_spawned)
+	#
+	#var power_ups_spawner = $power_ups_spawner
+	#power_ups_spawner.connect("power_up_spawn", self._on_power_up_spawn)
 	
 	var current_level_score_block = Global.score.get_level_block(Global.Level.LEVEL_1)
 	Global.score.set_current_level(current_level_score_block)
@@ -110,8 +110,8 @@ func _on_defeat() -> void:
 	emit_signal("defeat")
 	
 func _on_player_move(_position) -> void:
-	Global.update_score_by_move(_position.x)
-	$Player/player_camera/direction_distance.update_distance(str(int($Areas/Shelter.global_position.x - $Player.global_position.x)))
+	#Global.update_score_by_move(_position.x)
+	#$Player/player_camera/direction_distance.update_distance(str(int($Areas/Shelter.global_position.x - $Player.global_position.x)))
 	var right_offset:int =  130 + 40
 	var left_offset:int = 30 + 10
 	var to_delete: Array[MeteoriteBlock] = []

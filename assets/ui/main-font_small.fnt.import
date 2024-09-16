@@ -14,3 +14,4 @@ dest_files=["res://.godot/imported/main-font_small.fnt-86542da547c160c3ca67100d0
 
 fallbacks=[]
 compress=true
+scaling_mode=2

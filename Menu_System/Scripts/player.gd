@@ -8,7 +8,9 @@ signal on_meteor_deleted(meteor)
 @export var dash_cooldown = 1.5
 @export var dash_speed = 400
 @export var speed = 100
-@export var defeat_tex = preload("res://assets/graphic/characters/hero/sprite_sheets/defeat/character_01_defeat_sheet.png")
+#@export var defeat_tex = preload("res://assets/graphic/characters/hero/sprite_sheets/defeat/character_01_defeat_sheet.png")
+@export var idleTex = preload("res://assets/graphic/characters/hands/hand-idle.png")
+@export var spellTex = preload("res://assets/graphic/characters/hands/hand_spell_right.png")
 
 var active_speed = speed
 var power_up: PowerUp = null
@@ -22,8 +24,8 @@ var dash_timer: Timer
 func _ready():
 	self.dash_timer = $hero_mesh/dash_timer
 	self.dash_timer.wait_time = dash_cooldown
-	$hero_animations.play("idle")
-	self.set_defeat_animation(4)
+	#$hero_animations.play("idle")
+	#self.set_defeat_animation(4)
 
 func _process(delta):
 	var power_up_context = null
@@ -39,37 +41,53 @@ func _process(delta):
 	var velocity = Vector2.ZERO
 	var update_position = false
 	var player_run_sfx = $player_sfx as AudioStreamPlayer
-	_power_up_handler()
-	_dash_handler()
+	#_power_up_handler()
+	#_dash_handler()
 	
 	if not Global.isDeafeated:
+		if Input.is_action_pressed("a"):
+			$hero_mesh.texture = spellTex
+		else:
+			$hero_mesh.texture = idleTex
+		
+		
+		if Input.is_action_pressed("dpad_up"):
+			#$hero_animations.play("run_right")
+			velocity.y -= 1
+			update_position = true
+			
+		if Input.is_action_pressed("dpad_down"):
+			#$hero_animations.play("run_left")
+			velocity.y += 1
+			update_position = true
+		
 		if Input.is_action_pressed("dpad_right"):
-			if power_up_context == Global.PowerUp.BIG:
-				$hero_animations.play("run_right_BIG")
-			elif power_up_context == Global.PowerUp.SMALL:
-				$hero_animations.play("run_right_SMALL")
-			elif power_up_context == null:
-				$hero_animations.play("run_right")
-				
+			#if power_up_context == Global.PowerUp.BIG:
+				#$hero_animations.play("run_right_BIG")
+			#elif power_up_context == Global.PowerUp.SMALL:
+				#$hero_animations.play("run_right_SMALL")
+			#elif power_up_context == null:
+				#$hero_animations.play("run_right")
+				#
 			velocity.x += 1
 			update_position = true
 		elif Input.is_action_pressed("dpad_left"):
-			if power_up_context == Global.PowerUp.BIG:
-				$hero_animations.play("run_left_BIG")
-			elif power_up_context == Global.PowerUp.SMALL:
-				$hero_animations.play("run_left_SMALL")
-			elif power_up_context == null:
-				$hero_animations.play("run_left")
-			
+			#if power_up_context == Global.PowerUp.BIG:
+				#$hero_animations.play("run_left_BIG")
+			#elif power_up_context == Global.PowerUp.SMALL:
+				#$hero_animations.play("run_left_SMALL")
+			#elif power_up_context == null:
+				#$hero_animations.play("run_left")
+			#
 			velocity.x -= 1
 			update_position = true
 		else:
-			if power_up_context == Global.PowerUp.BIG:
-				$hero_animations.play("idle_BIG")
-			elif power_up_context == Global.PowerUp.SMALL:
-				$hero_animations.play("idle_SMALL")
-			elif power_up_context == null:
-				$hero_animations.play("idle")
+			#if power_up_context == Global.PowerUp.BIG:
+				#$hero_animations.play("idle_BIG")
+			#elif power_up_context == Global.PowerUp.SMALL:
+				#$hero_animations.play("idle_SMALL")
+			#elif power_up_context == null:
+				#$hero_animations.play("idle")
 				
 			player_run_sfx.stop()
 #			isDashing = false
@@ -81,8 +99,8 @@ func _process(delta):
 		emit_signal("player_update_position", $".".global_position)
 		if not player_run_sfx.playing:
 			player_run_sfx.play()
-	if Input.is_action_just_pressed("dpad_down"):
-		swap_power_ups()
+	#if Input.is_action_just_pressed("dpad_down"):
+		#swap_power_ups()
 		
 func _on_body_entered(body: Node2D) -> void:
 	if not Global.isDeafeated and body.is_in_group("Meteorite"):
@@ -150,10 +168,10 @@ func set_defeat_animation(times) -> void:
 			var seconds = float(key/10.0) + 0.1
 			defeat_animation.track_insert_key(track, seconds, frame)
 
-	var tex_track = defeat_animation.add_track(Animation.TYPE_VALUE, 1)
-	defeat_animation.track_set_enabled(tex_track, true)
-	defeat_animation.track_set_path(tex_track, "hero_mesh:texture")
-	defeat_animation.track_insert_key(tex_track, 0.0, defeat_tex)
+	#var tex_track = defeat_animation.add_track(Animation.TYPE_VALUE, 1)
+	#defeat_animation.track_set_enabled(tex_track, true)
+	#defeat_animation.track_set_path(tex_track, "hero_mesh:texture")
+	#defeat_animation.track_insert_key(tex_track, 0.0, defeat_tex)
 	
 func _on_picked_up_magnification(speed_mul,scale_mul)->void:
 	$power_up_picked_up.play()
@@ -218,4 +236,3 @@ class PowerUp:
 		if not self.type == Global.PowerUp.SHIELD:
 			self.destroy_time = _counter + self.charge
 		# PLAY TRANSFORM ANIMATION
-

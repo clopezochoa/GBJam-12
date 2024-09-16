@@ -8,7 +8,7 @@ var scenes: SceneControl = SceneControl.new()
 @export var main_menu_scene_pk: PackedScene
 @export var level_1_scene_pk: PackedScene
 
-@export var transition_pk: PackedScene
+#@export var transition_pk: PackedScene
 
 func _main_preprocesses() -> void:
 	Global.init_score_data()
@@ -23,7 +23,7 @@ func _create_scenes_info() -> void:
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	_main_preprocesses()
-	get_tree().root.size = Vector2(640,576)
+	get_tree().root.size = Vector2(160,144)
 	
 	var intro_scene = self.scenes.get_scene_by_name(Global.SceneName[Global.Scene.INTRO])
 	await load_scene(intro_scene)
@@ -50,10 +50,12 @@ func load_scene(scene: SceneInfo)->void:
 	var scene_instace = scene.packed_scene.instantiate()
 	scene_instace.name = scene.name
 	add_child(scene_instace)
-	await Global.fade(false)
+	#if scene.id != 0:
+		#await Global.fade(false)
 	
 func remove_scene(scene: SceneInfo)->void:
-	await Global.fade(true)
+	#if scene.id != 0:
+		#await Global.fade(true)
 	get_node(scene.name).queue_free()
 
 func load_menu() ->void:

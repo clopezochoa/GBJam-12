@@ -1,0 +1,57 @@
+[gd_scene load_steps=11 format=3 uid="uid://ga08fi1u5kdl"]
+
+[ext_resource type="Script" path="res://Menu_System/Scripts/player.gd" id="1_umu53"]
+[ext_resource type="Texture2D" uid="uid://ch7k5fqlbafpp" path="res://assets/graphic/characters/hands/hand_spell_right.png" id="2_yxh3e"]
+[ext_resource type="AudioStream" uid="uid://bgssspwek15cf" path="res://assets/audio/sfx/collisions/meteorite-collision.mp3" id="5_skxcx"]
+[ext_resource type="AudioStream" uid="uid://drnjxbj1olbqk" path="res://assets/audio/sfx/defeat/death.wav" id="6_h6yxv"]
+[ext_resource type="AudioStream" uid="uid://cocwxmqg883" path="res://assets/audio/sfx/power_ups/big.wav" id="13_h751m"]
+[ext_resource type="AudioStream" uid="uid://t7qdjan36qc1" path="res://assets/audio/sfx/power_ups/small.wav" id="14_c68rj"]
+[ext_resource type="AudioStream" uid="uid://bue0c1dtfmqy" path="res://assets/audio/sfx/power_ups/shield_up.wav" id="15_mqdi7"]
+[ext_resource type="AudioStream" uid="uid://ohlwibuug8qn" path="res://assets/audio/sfx/power_ups/shield_down.wav" id="16_p58ac"]
+[ext_resource type="AudioStream" uid="uid://c51xgfpd5nkus" path="res://assets/audio/sfx/power_ups/power_up_picked_up.mp3" id="17_hu88f"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_4hh4j"]
+
+[node name="Player" type="Area2D" groups=["Player"]]
+script = ExtResource("1_umu53")
+speed = 90
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+scale = Vector2(0.759999, 1)
+shape = SubResource("CapsuleShape2D_4hh4j")
+
+[node name="hero_mesh" type="Sprite2D" parent="."]
+texture = ExtResource("2_yxh3e")
+
+[node name="dash_timer" type="Timer" parent="hero_mesh"]
+one_shot = true
+
+[node name="meteorite_collision" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_skxcx")
+volume_db = -12.0
+
+[node name="death" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("6_h6yxv")
+volume_db = -16.0
+
+[node name="big_power_up_use" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("13_h751m")
+volume_db = -8.0
+
+[node name="small_power_up_use" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("14_c68rj")
+volume_db = -8.0
+
+[node name="shield_up" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("15_mqdi7")
+volume_db = -8.0
+
+[node name="shield_down" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("16_p58ac")
+volume_db = -8.0
+
+[node name="power_up_picked_up" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("17_hu88f")
+volume_db = -8.0
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

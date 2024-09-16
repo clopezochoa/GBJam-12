@@ -4,6 +4,7 @@ uniform vec4 color1: source_color;
 uniform vec4 color2: source_color;
 uniform vec4 color3: source_color;
 uniform vec4 color4: source_color;
+
 uniform bool simple_shading_mode = true;
 uniform float brightness_factor = 0.0;
 uniform sampler2D screen : hint_screen_texture, repeat_disable;
