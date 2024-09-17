@@ -1,15 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://curqbovuaop8h"]
+[gd_scene load_steps=2 format=3 uid="uid://curqbovuaop8h"]
 
-[ext_resource type="Texture2D" uid="uid://by2k5u22ud5vx" path="res://assets/graphic/environment/env_01/foreground/ground_plane/tileset/env_01_rocks_tileset.png" id="1_friw1"]
-[ext_resource type="Texture2D" uid="uid://c3dvcaclktrqx" path="res://assets/graphic/environment/env_01/foreground/ground_plane/tileset/env_01_ground_tileset.png" id="1_sod0w"]
-
-[sub_resource type="Gradient" id="Gradient_vwh6i"]
-colors = PackedColorArray(0, 0, 0, 1, 0, 0, 0, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_7kg6a"]
-gradient = SubResource("Gradient_vwh6i")
-width = 160
-height = 3610
+[ext_resource type="Texture2D" uid="uid://ccharkgn8nwbv" path="res://assets/graphic/environment/env_01/background/farthest_plane/tileset/bg_1_sheet.png" id="1_nwq2x"]
 
 [node name="parallax_background" type="CanvasLayer"]
 
@@ -21,30 +12,7 @@ motion_scale = Vector2(0.285, 0.285)
 motion_mirroring = Vector2(1280, 0)
 
 [node name="Planet" type="Sprite2D" parent="Planet/PlanetLayer"]
-position = Vector2(36, -1777)
-rotation = 1.5708
-scale = Vector2(0.500391, 0.5)
-texture = ExtResource("1_sod0w")
-
-[node name="Sprite2D" type="Sprite2D" parent="Planet/PlanetLayer"]
-z_index = -1
-position = Vector2(81, -847)
-texture = SubResource("GradientTexture2D_7kg6a")
-
-[node name="rocks" type="Sprite2D" parent="Planet/PlanetLayer"]
-position = Vector2(37, -1777)
-rotation = 1.5708
-scale = Vector2(0.500391, 0.5)
-texture = ExtResource("1_friw1")
-
-[node name="Planet2" type="Sprite2D" parent="Planet/PlanetLayer"]
-position = Vector2(123, -497)
-rotation = 4.71239
-scale = Vector2(0.5, 0.5)
-texture = ExtResource("1_sod0w")
-
-[node name="rocks2" type="Sprite2D" parent="Planet/PlanetLayer"]
-position = Vector2(123, -497)
-rotation = 4.71239
-scale = Vector2(0.5, 0.5)
-texture = ExtResource("1_friw1")
+position = Vector2(80, 72)
+texture = ExtResource("1_nwq2x")
+hframes = 8
+vframes = 8

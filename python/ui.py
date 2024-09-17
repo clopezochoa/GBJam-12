@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import filedialog
-from PIL import ImageTk
+from PIL import Image, ImageTk
 from graphics import generate_background, create_animation, hex_to_rgb
+import math
 
 # Constants
 WIDTH, HEIGHT = 160, 144
@@ -10,7 +11,7 @@ WIDTH, HEIGHT = 160, 144
 default_colors = {
     "Darkest": "#190000",
     "Dark Red": "#560909",
-    "Bright Red": "#ad2020",
+    "Light Red": "#ad2020",
     "Brightest": "#f2e6e6"
 }
 
@@ -42,13 +43,15 @@ def generate_image_data():
     horizon_height = height_slider.get() / 100.0
     ground_color = hex_to_rgb(ground_color_entry.get())
     sky_color = hex_to_rgb(sky_color_entry.get())
+    cloud_light_color = hex_to_rgb(cloud_light_color_entry.get())
+    cloud_dark_color = hex_to_rgb(cloud_dark_color_entry.get())
     
-    return curve_intensity, fade_depth, horizon_height, ground_color, sky_color
+    return curve_intensity, fade_depth, horizon_height, ground_color, sky_color, cloud_light_color, cloud_dark_color
 
 # Unified function for generating and updating preview
 def update_preview():
-    curve_intensity, fade_depth, horizon_height, ground_color, sky_color = generate_image_data()
-    bg_img = generate_background(curve_intensity, fade_depth, horizon_height, ground_color, sky_color)
+    curve_intensity, fade_depth, horizon_height, ground_color, sky_color, cloud_light_color, cloud_dark_color = generate_image_data()
+    bg_img = generate_background(curve_intensity, fade_depth, horizon_height, ground_color, sky_color, cloud_light_color, cloud_dark_color)
     
     # Update the preview image in the UI
     preview_img = ImageTk.PhotoImage(bg_img.resize((WIDTH * 2, HEIGHT * 2)))  # Scale up for better view
@@ -57,8 +60,8 @@ def update_preview():
 
 # Save image function using unified image generation
 def save_image():
-    curve_intensity, fade_depth, horizon_height, ground_color, sky_color = generate_image_data()
-    bg_img = generate_background(curve_intensity, fade_depth, horizon_height, ground_color, sky_color)
+    curve_intensity, fade_depth, horizon_height, ground_color, sky_color, cloud_light_color, cloud_dark_color = generate_image_data()
+    bg_img = generate_background(curve_intensity, fade_depth, horizon_height, ground_color, sky_color, cloud_light_color, cloud_dark_color)
     
     filepath = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png")])
     if filepath:
@@ -67,14 +70,43 @@ def save_image():
 
 # Create animation using unified image generation
 def create_animation_handler():
-    curve_intensity, fade_depth, horizon_height, ground_color, sky_color = generate_image_data()
+    curve_intensity, fade_depth, horizon_height, ground_color, sky_color, cloud_light_color, cloud_dark_color = generate_image_data()
     leveling_factor = leveling_slider.get() / 100.0
-    images = create_animation(curve_intensity, fade_depth, horizon_height, ground_color, sky_color, leveling_factor)
+    images = create_animation(curve_intensity, fade_depth, horizon_height, ground_color, sky_color, cloud_light_color, cloud_dark_color, leveling_factor)
     
     filepath = filedialog.asksaveasfilename(defaultextension=".gif", filetypes=[("GIF files", "*.gif")])
     if filepath:
         images[0].save(filepath, save_all=True, append_images=images[1:], duration=100, loop=0)
         print(f"Animation saved to {filepath}")
+
+# Save animation as a sprite sheet with all frames in a single PNG
+def save_sprite_sheet():
+    curve_intensity, fade_depth, horizon_height, ground_color, sky_color, cloud_light_color, cloud_dark_color = generate_image_data()
+    curve_intensity, fade_depth, horizon_height, ground_color, sky_color, cloud_light_color, cloud_dark_color = generate_image_data()
+    leveling_factor = leveling_slider.get() / 100.0
+    images = create_animation(curve_intensity, fade_depth, horizon_height, ground_color, sky_color, cloud_light_color, cloud_dark_color, leveling_factor)
+    
+    # Calculate the number of frames
+    total_frames = len(images)
+    
+    # Determine the grid size
+    sheet_columns = math.ceil(math.sqrt(total_frames))  # Number of columns (square root)
+    sheet_rows = math.ceil(total_frames / sheet_columns)  # Number of rows
+
+    # Create a blank image for the sprite sheet
+    sprite_sheet = Image.new("RGB", (WIDTH * sheet_columns, HEIGHT * sheet_rows))
+
+    # Paste each frame into the sprite sheet
+    for frame_idx, img in enumerate(images):
+        x = (frame_idx % sheet_columns) * WIDTH
+        y = (frame_idx // sheet_columns) * HEIGHT
+        sprite_sheet.paste(img, (x, y))
+
+    # Save the sprite sheet as a PNG image
+    output_image = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG Image", "*.png")])
+    if output_image:
+        sprite_sheet.save(output_image)
+        print(f"Sprite sheet saved as {output_image}")
 
 # Create the Tkinter window
 window = tk.Tk()
@@ -114,11 +146,25 @@ sky_color_entry = tk.Entry(window)
 sky_color_entry.insert(0, default_colors["Brightest"])
 sky_color_entry.grid(row=6, column=2, columnspan=2)
 
+tk.Label(window, text="Cloud Light Color (HEX)").grid(row=7, column=0, columnspan=2)
+cloud_light_color_entry = tk.Entry(window)
+cloud_light_color_entry.insert(0, default_colors["Dark Red"])
+cloud_light_color_entry.grid(row=7, column=2, columnspan=2)
+
+tk.Label(window, text="Cloud Dark Color (HEX)").grid(row=8, column=0, columnspan=2)
+cloud_dark_color_entry = tk.Entry(window)
+cloud_dark_color_entry.insert(0, default_colors["Light Red"])
+cloud_dark_color_entry.grid(row=8, column=2, columnspan=2)
+
+# Buttons for saving image, creating animation, and saving sprite sheet
 save_button = tk.Button(window, text="Save Image", command=save_image)
-save_button.grid(row=7, column=0)
+save_button.grid(row=11, column=0)
 
 animation_button = tk.Button(window, text="Create Animation", command=create_animation_handler)
-animation_button.grid(row=7, column=1)
+animation_button.grid(row=11, column=1)
+
+sprite_sheet_button = tk.Button(window, text="Save as Sprite Sheet", command=save_sprite_sheet)
+sprite_sheet_button.grid(row=11, column=2)
 
 update_preview()
 window.mainloop()

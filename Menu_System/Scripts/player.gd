@@ -38,13 +38,20 @@ func _process(delta):
 		counter = 0.0
 	counter += delta
 	self.active_speed = speed
-	var velocity = Vector2.ZERO
-	var update_position = false
-	var player_run_sfx = $player_sfx as AudioStreamPlayer
+	#var player_run_sfx = $player_sfx as AudioStreamPlayer
 	#_power_up_handler()
-	#_dash_handler()
-	
+	if Input.is_action_pressed("dpad_down"):
+		_dash_handler()
+		
+	move(delta)
+		
+
+func move(delta):
 	if not Global.isDeafeated:
+		
+		var velocity = Vector2.ZERO
+		var update_position = false
+
 		if Input.is_action_pressed("a"):
 			$hero_mesh.texture = spellTex
 		else:
@@ -58,8 +65,9 @@ func _process(delta):
 			
 		if Input.is_action_pressed("dpad_down"):
 			#$hero_animations.play("run_left")
-			velocity.y += 1
-			update_position = true
+			if isDashing:
+				velocity.y += 1
+				update_position = true
 		
 		if Input.is_action_pressed("dpad_right"):
 			#if power_up_context == Global.PowerUp.BIG:
@@ -69,8 +77,9 @@ func _process(delta):
 			#elif power_up_context == null:
 				#$hero_animations.play("run_right")
 				#
-			velocity.x += 1
-			update_position = true
+			if position.x < 80:
+				velocity.x += 1
+				update_position = true
 		elif Input.is_action_pressed("dpad_left"):
 			#if power_up_context == Global.PowerUp.BIG:
 				#$hero_animations.play("run_left_BIG")
@@ -79,9 +88,10 @@ func _process(delta):
 			#elif power_up_context == null:
 				#$hero_animations.play("run_left")
 			#
-			velocity.x -= 1
-			update_position = true
-		else:
+			if position.x > -80:
+				velocity.x -= 1
+				update_position = true
+		#else:
 			#if power_up_context == Global.PowerUp.BIG:
 				#$hero_animations.play("idle_BIG")
 			#elif power_up_context == Global.PowerUp.SMALL:
@@ -89,19 +99,19 @@ func _process(delta):
 			#elif power_up_context == null:
 				#$hero_animations.play("idle")
 				
-			player_run_sfx.stop()
-#			isDashing = false
+			#player_run_sfx.stop()
+	#			isDashing = false
 			
-	velocity = velocity.normalized() * self.active_speed
-	position += velocity * delta
+		velocity = velocity.normalized() * self.active_speed
+		position += velocity * delta
+
+		if update_position:
+			emit_signal("player_update_position", $".".global_position)
+			#if not player_run_sfx.playing:
+				#player_run_sfx.play()
+		#if Input.is_action_just_pressed("dpad_down"):
+			#swap_power_ups()
 	
-	if update_position:
-		emit_signal("player_update_position", $".".global_position)
-		if not player_run_sfx.playing:
-			player_run_sfx.play()
-	#if Input.is_action_just_pressed("dpad_down"):
-		#swap_power_ups()
-		
 func _on_body_entered(body: Node2D) -> void:
 	if not Global.isDeafeated and body.is_in_group("Meteorite"):
 		$meteorite_collision.play()
@@ -117,17 +127,17 @@ func _on_body_entered(body: Node2D) -> void:
 			
 
 func _dash_handler()-> void:
-	if power_up == null or not power_up.active:
-		if isDashing and counter >= delta_deadend:
-			self.active_speed = speed 
-			isDashing = false
-		elif isDashing and counter < delta_deadend:
-			self.active_speed = dash_speed
-		elif Input.is_action_just_pressed("a") and not isDashing and dash_timer.is_stopped():
-			dash_timer.start()
-			self.active_speed = dash_speed
-			isDashing = true
-			delta_deadend = counter + dash_offset
+	if isDashing and counter >= delta_deadend:
+		self.active_speed = speed 
+		isDashing = false
+	elif isDashing and counter < delta_deadend:
+		self.active_speed = dash_speed
+	elif Input.is_action_just_pressed("dpad_down") and not isDashing and dash_timer.is_stopped():
+		dash_timer.start()
+		self.active_speed = dash_speed
+		isDashing = true
+		#move(0.1)
+		delta_deadend = counter + dash_offset
 
 func _power_up_handler()-> void:
 	if not isDashing and power_up != null:

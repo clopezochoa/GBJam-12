@@ -1,9 +1,8 @@
-[gd_scene load_steps=20 format=3 uid="uid://duivdh4a5que7"]
+[gd_scene load_steps=22 format=3 uid="uid://duivdh4a5que7"]
 
 [ext_resource type="Script" path="res://game/levels/level_1_alpha_test.gd" id="1_4novl"]
 [ext_resource type="PackedScene" uid="uid://ga08fi1u5kdl" path="res://Menu_System/Scenes/player.tscn" id="1_gcv57"]
 [ext_resource type="PackedScene" uid="uid://wam7yyo7p770" path="res://ui/in-game/win_screen.tscn" id="2_ehymt"]
-[ext_resource type="PackedScene" uid="uid://ccx7pvyauhxfp" path="res://scenes/characters/enemy.tscn" id="3_dadko"]
 [ext_resource type="Script" path="res://game/levels/player_camera.gd" id="4_di0ee"]
 [ext_resource type="PackedScene" uid="uid://b6en1kjbe11nn" path="res://Menu_System/Scenes/pause_screen.tscn" id="5_7att2"]
 [ext_resource type="Texture2D" uid="uid://ccharkgn8nwbv" path="res://assets/graphic/environment/env_01/background/farthest_plane/tileset/bg_1_sheet.png" id="5_t0u7i"]
@@ -14,6 +13,8 @@
 [ext_resource type="Script" path="res://scripts/environment/env_01/background/farthest_plane/bg_movement.gd" id="12_akmg6"]
 [ext_resource type="Script" path="res://animations/autoload.gd" id="12_da86k"]
 [ext_resource type="Shader" path="res://scripts/postprocesses_layers/color_4_post_process.gdshader" id="13_3pygw"]
+[ext_resource type="Script" path="res://scripts/characters/enemy_spawn.gd" id="14_bceml"]
+[ext_resource type="Script" path="res://Menu_System/Scripts/enemy_timer.gd" id="15_jn20r"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_kmf8p"]
 shader = ExtResource("13_3pygw")
@@ -23,21 +24,6 @@ shader_parameter/color3 = Color(0.678431, 0.12549, 0.12549, 1)
 shader_parameter/color4 = Color(0.94902, 0.901961, 0.901961, 1)
 shader_parameter/simple_shading_mode = true
 shader_parameter/brightness_factor = 0.0
-
-[sub_resource type="Animation" id="Animation_xisb7"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:frame")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [0]
-}
 
 [sub_resource type="Animation" id="Animation_7rj75"]
 resource_name = "bg"
@@ -55,22 +41,35 @@ tracks/0/keys = {
 "values": [0, 63]
 }
 
+[sub_resource type="Animation" id="Animation_xisb7"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_aflye"]
 _data = {
 "RESET": SubResource("Animation_xisb7"),
 "bg": SubResource("Animation_7rj75")
 }
 
-[sub_resource type="Curve2D" id="Curve2D_hkp0j"]
-_data = {
-"points": PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 160, 0)
-}
-point_count = 2
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8p0lv"]
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_qraxp"]
+size = Vector2(20, 20)
 
 [node name="level_1_alpha_test" type="Node"]
 script = ExtResource("1_4novl")
 win_screen = ExtResource("2_ehymt")
-mob_scene = ExtResource("3_dadko")
 
 [node name="Player" parent="." instance=ExtResource("1_gcv57")]
 collision_mask = 6
@@ -138,30 +137,20 @@ libraries = {
 }
 script = ExtResource("12_da86k")
 
-[node name="MobTimer" type="Timer" parent="."]
-wait_time = 0.5
+[node name="enemy" type="Area2D" parent="."]
+script = ExtResource("14_bceml")
 
-[node name="ScoreTimer" type="Timer" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="enemy"]
+shape = SubResource("RectangleShape2D_8p0lv")
 
-[node name="StartTimer" type="Timer" parent="."]
-wait_time = 0.5
-one_shot = true
+[node name="Sprite2D" type="Sprite2D" parent="enemy"]
+texture = SubResource("PlaceholderTexture2D_qraxp")
 
-[node name="MobPath" type="Path2D" parent="."]
-position = Vector2(0, -114)
-curve = SubResource("Curve2D_hkp0j")
-
-[node name="MobSpawnLocation" type="PathFollow2D" parent="MobPath"]
-
-[node name="StartPosition" type="Marker2D" parent="."]
-position = Vector2(0, -114)
-
-[node name="_debug" type="Timer" parent="."]
+[node name="enemy_spawn_timer" type="Timer" parent="."]
+wait_time = 3.0
 autostart = true
+script = ExtResource("15_jn20r")
 
 [connection signal="player_update_position" from="Player" to="Sprite2D" method="_on_player_player_update_position"]
+[connection signal="player_update_position" from="Player" to="enemy" method="_on_player_player_update_position"]
 [connection signal="unpause" from="Pause Screen" to="." method="_on_pause_screen_unpause"]
-[connection signal="timeout" from="MobTimer" to="." method="_on_mob_timer_timeout"]
-[connection signal="timeout" from="ScoreTimer" to="." method="_on_score_timer_timeout"]
-[connection signal="timeout" from="StartTimer" to="." method="_on_start_timer_timeout"]
-[connection signal="timeout" from="_debug" to="." method="_on__debug_timeout"]

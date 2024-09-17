@@ -4,9 +4,12 @@ signal exit_game
 signal defeat
 signal win
 
+var	score = 0
+var enemyList: Array[Node2D] = []
 var meteorite_pool: Array[MeteoriteBlock] = []
 
 @export var win_screen: PackedScene
+@export var mob_scene: PackedScene
 
 func _ready() -> void:
 	Global.isDeafeated = false
@@ -39,6 +42,10 @@ func _ready() -> void:
 	Global.score.set_current_level(current_level_score_block)
 	Global.emit_current_score()
 	Global.emit_level_score(Global.Level.LEVEL_1)
+	
+	score = 0
+	#$Player.start($StartPosition.position)
+	$StartTimer.start()
 	
 	
 func _process(_delta: float) -> void:
@@ -166,3 +173,39 @@ class MeteoriteBlock:
 	func _init(_meteorite: RigidBody2D, _offset: int):
 		self.meteorite = _meteorite
 		self.offset = _offset
+
+
+func _on_mob_timer_timeout() -> void:
+		# Create a new instance of the Mob scene.
+	var mob = mob_scene.instantiate()
+	var mob_spawn_location = $MobPath/MobSpawnLocation
+	mob_spawn_location.progress_ratio = randf()
+	mob.position = Vector2(mob_spawn_location.position.x, $Player.position.y - 140)
+
+	# Set the mob's direction perpendicular to the path direction.
+	#var direction = mob_spawn_location.rotation + PI / 2
+
+	# Set the mob's position to a random location.
+
+	# Add some randomness to the direction.
+	#direction += randf_range(-PI / 4, PI / 4)
+	#mob.rotation = direction
+
+	# Choose the velocity for the mob.
+	#var velocity = Vector2(randf_range(150.0, 250.0), 0.0)
+	#mob.linear_velocity = velocity.rotated(direction)
+
+	# Spawn the mob by adding it to the Main scene.
+	add_child(mob)
+	enemyList.append(mob)
+	mob.connect("enemy_freed", self._on_enemy_freed)
+
+func _on_score_timer_timeout() -> void:
+	score += 1
+
+func _on_start_timer_timeout() -> void:
+	$MobTimer.start()
+	$ScoreTimer.start()
+
+func _on_enemy_freed(enemy: Node2D) -> void:
+	enemyList.erase(enemy)
