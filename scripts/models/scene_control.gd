@@ -15,7 +15,7 @@ func add_scenes(scenes_to_add: Array[SceneInfo]):
 func delete_scenes(scenes_to_delete: Array[SceneInfo]):
 	var tmp: Array[SceneInfo] = []
 	for _scene in self.scenes:
-		if not scenes_to_delete.has(_scene.name):
+		if not scenes_to_delete.has(_scene):
 			tmp.push_back(_scene)
 	self.scenes = tmp
 	

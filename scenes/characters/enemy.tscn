@@ -8,10 +8,11 @@
 size = Vector2(20, 20)
 
 [node name="Enemy" type="Area2D"]
+position = Vector2(0, 144)
 script = ExtResource("1_q3gdi")
 
 [node name="Lifespan" type="Timer" parent="."]
-wait_time = 3.0
+wait_time = 20.0
 one_shot = true
 
 [node name="EnemyCollisionShape" type="CollisionShape2D" parent="."]
@@ -20,4 +21,17 @@ shape = SubResource("RectangleShape2D_4mae3")
 [node name="EnemySprite" type="Sprite2D" parent="."]
 texture = SubResource("PlaceholderTexture2D_e088s")
 
-[connection signal="timeout" from="Lifespan" to="." method="_on_lifespan_timeout"]
+[node name="Label" type="Label" parent="."]
+z_index = 10
+z_as_relative = false
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 1, 0, 1)
+theme_override_font_sizes/font_size = 10
+
+[node name="Death" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true

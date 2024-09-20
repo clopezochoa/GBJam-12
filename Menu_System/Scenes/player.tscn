@@ -11,24 +11,11 @@
 [ext_resource type="AudioStream" uid="uid://c51xgfpd5nkus" path="res://assets/audio/sfx/power_ups/power_up_picked_up.mp3" id="17_hu88f"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_4hh4j"]
-radius = 7.89474
-height = 48.0
+height = 52.0
 
-[node name="Player" type="Area2D" groups=["Player"]]
+[node name="Player" type="Node2D" groups=["Player"]]
 script = ExtResource("1_umu53")
 speed = 90
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(82, 10)
-scale = Vector2(0.759999, 1)
-shape = SubResource("CapsuleShape2D_4hh4j")
-
-[node name="hero_mesh" type="Sprite2D" parent="."]
-position = Vector2(81, 10)
-texture = ExtResource("2_yxh3e")
-
-[node name="dash_timer" type="Timer" parent="hero_mesh"]
-one_shot = true
 
 [node name="meteorite_collision" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("5_skxcx")
@@ -58,4 +45,50 @@ volume_db = -8.0
 stream = ExtResource("17_hu88f")
 volume_db = -8.0
 
-[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[node name="Player_2" type="Area2D" parent="."]
+position = Vector2(160, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player_2"]
+shape = SubResource("CapsuleShape2D_4hh4j")
+
+[node name="Sprite2D" type="Sprite2D" parent="Player_2"]
+texture = ExtResource("2_yxh3e")
+
+[node name="dash_timer" type="Timer" parent="Player_2"]
+one_shot = true
+
+[node name="shoot_cooldown_timer" type="Timer" parent="Player_2"]
+one_shot = true
+autostart = true
+
+[node name="Label" type="Label" parent="Player_2"]
+offset_left = -50.0
+offset_top = -24.0
+offset_right = -10.0
+offset_bottom = -1.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 1, 0, 1)
+
+[node name="Player_1" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player_1"]
+shape = SubResource("CapsuleShape2D_4hh4j")
+
+[node name="Sprite2D" type="Sprite2D" parent="Player_1"]
+scale = Vector2(-1, 1)
+texture = ExtResource("2_yxh3e")
+
+[node name="dash_timer" type="Timer" parent="Player_1"]
+one_shot = true
+
+[node name="shoot_cooldown_timer" type="Timer" parent="Player_1"]
+one_shot = true
+autostart = true
+
+[node name="Label" type="Label" parent="Player_1"]
+offset_left = 11.0
+offset_top = -22.0
+offset_right = 51.0
+offset_bottom = 1.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 1, 0, 1)

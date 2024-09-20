@@ -3,13 +3,16 @@ extends Node
 signal exit_game
 signal defeat
 signal win
+signal on_enemy_registered(enemy: EnemyInfo)
 
 var	score = 0
-var enemyList: Array[Node2D] = []
 var meteorite_pool: Array[MeteoriteBlock] = []
 
 @export var win_screen: PackedScene
-@export var mob_scene: PackedScene
+@export var enemy_scene: PackedScene
+
+var enemies: EnemyControl = EnemyControl.new()
+var cumulative: int = 0
 
 func _ready() -> void:
 	Global.isDeafeated = false
@@ -22,7 +25,10 @@ func _ready() -> void:
 	
 	$Player.connect("defeated", self._on_defeat)
 	$Player.connect("player_update_position", self._on_player_move)
-	$Player.connect("on_meteor_deleted", self._on_meteor_deleted)	
+	$Player.connect("on_meteor_deleted", self._on_meteor_deleted)
+
+	#$Enemy.connect("enemy_freed", self._on_enemy_freed)	
+
 	#$Areas/Threshhold_1_easy.connect("area_entered",self._on_player_reach_difficlty_area_1)
 	#$Areas/Threshhold_2_medium.connect("area_entered",self._on_player_reach_difficlty_area_2)
 	#$Areas/Threshhold_3_hard.connect("area_entered",self._on_player_reach_difficlty_area_3)
@@ -47,8 +53,15 @@ func _ready() -> void:
 	#$Player.start($StartPosition.position)
 	$StartTimer.start()
 	
+	#var player = $Player  # Adjust this path to the actual player node
+	#if player:
+		#player.player_update_position.connect(_on_player_update_position)
+	
 	
 func _process(_delta: float) -> void:
+	enemies.wipe_unseen($player_camera.global_position.y + 120)
+	print(len(enemies.enemies))
+	
 	if $"Pause Timer".is_stopped() == true:
 		if Input.is_action_pressed("pause"):
 			print("P pressed during unpaused")
@@ -174,13 +187,24 @@ class MeteoriteBlock:
 		self.meteorite = _meteorite
 		self.offset = _offset
 
+func _on_sort_by_height(a,b):
+	if a.global_position.y >= b.global_position.y:
+		return a
+	else:
+		return b
 
 func _on_mob_timer_timeout() -> void:
+	self.cumulative += 1
+	
 		# Create a new instance of the Mob scene.
-	var mob = mob_scene.instantiate()
-	var mob_spawn_location = $MobPath/MobSpawnLocation
-	mob_spawn_location.progress_ratio = randf()
-	mob.position = Vector2(mob_spawn_location.position.x, $Player.position.y - 140)
+	var enemy = enemy_scene.instantiate()
+	var enemyObj = enemies.add_enemyFromArea2D(self.cumulative, enemy)
+	#self.on_enemy_registered.emit(enemyObj)
+	#enemies.add_enemies([mob])
+	#print(enemies.enemies)
+	var enemy_spawn_location = $player_camera/MobPath/MobSpawnLocation
+	enemy_spawn_location.progress_ratio = randf()
+	enemy.position = Vector2(enemy_spawn_location.position.x, enemy_spawn_location.position.y + $player_camera.position.y +(144/4))
 
 	# Set the mob's direction perpendicular to the path direction.
 	#var direction = mob_spawn_location.rotation + PI / 2
@@ -193,12 +217,14 @@ func _on_mob_timer_timeout() -> void:
 
 	# Choose the velocity for the mob.
 	#var velocity = Vector2(randf_range(150.0, 250.0), 0.0)
-	#mob.linear_velocity = velocity.rotated(direction)
 
 	# Spawn the mob by adding it to the Main scene.
-	add_child(mob)
-	enemyList.append(mob)
-	mob.connect("enemy_freed", self._on_enemy_freed)
+	add_child(enemy)
+	
+	#enemyList.sort_custom(_on_sort_by_height)
+	#var enemyToConnect = enemies.get_enemy_by_id(self.cumulative).instance
+	#if enemyToConnect:
+		#enemyToConnect.connect("enemy_freed", self._on_enemy_freed)
 
 func _on_score_timer_timeout() -> void:
 	score += 1
@@ -207,5 +233,55 @@ func _on_start_timer_timeout() -> void:
 	$MobTimer.start()
 	$ScoreTimer.start()
 
-func _on_enemy_freed(enemy: Node2D) -> void:
-	enemyList.erase(enemy)
+#func _on_enemy_freed(enemy: EnemyInfo) -> void:
+	#print(len(enemies.enemies))
+	#enemies.delete_enemies([enemy])
+	##enemy.instance.queue_free()
+	#print(len(enemies.enemies))
+	##enemyList.erase(enemy)
+	#
+
+#func _on_player_update_position(player: PlayerInfo) -> void:
+	#print(player.name + " moved")
+
+
+
+func _on_player_player_shoot(players: Array[PlayerInfo]) -> void:
+	for player in players:
+		var closestEnemy: EnemyInfo = null
+		#var closestEnemyDiff: int = -1
+		for enemy in enemies.enemies:
+			#print(enemy.instance.global_position.y)
+			#print(player.instance.position.y)
+			#print(enemy.instance.global_position.y, player.instance.position.y)
+			#if abs(enemy.instance.global_position.y - $player_camera.global_position.y) < 35 and (enemy.instance.global_position.y - 100) > $player_camera.global_position.y:
+			
+			if enemy.instance.global_position.y > player.instance.global_position.y:
+				continue
+			#var diff = abs(enemy.global_position.x - position.x) + abs(enemy.global_position.y - position.y)
+			if enemy.instance.global_position.x > player.instance.position.x - 15 and enemy.instance.global_position.x < player.instance.position.x + 15:
+				closestEnemy = enemy
+				break
+				
+			#if (closestEnemy == null) or (diff < closestEnemyDiff):
+			#if (closestEnemy == null):
+				#closestEnemy = enemy
+				#closestEnemyDiff = diff
+				
+		if closestEnemy != null:
+			var enemy_sprite = closestEnemy.instance.get_node("EnemySprite")  # Get the Sprite2D node
+			if enemy_sprite and enemy_sprite is Sprite2D:
+				enemy_sprite.modulate = Color(0, 1, 0)  # Green color (R=0, G=1, B=0)
+			
+			#closestEnemy.queue_free()
+			var closestEnemyTimer: Timer = closestEnemy.instance.get_node('Death')
+			closestEnemyTimer.connect("timeout", Callable(self, "_kill").bind(closestEnemy))
+			closestEnemyTimer.start()
+			
+					
+			
+		
+
+func _kill(enemy_to_kill: EnemyInfo):
+	enemies.delete_enemies([enemy_to_kill])
+	

@@ -76,12 +76,26 @@ enum Type {
 	MENU,
 	LEVEL,
 	ANIMATION,
+	CHARACTER,
 }
 
 var TypeName = {
 	Type.MENU: "MENU",
 	Type.LEVEL: "LEVEL",
-	Type.ANIMATION: "ANIMATION"
+	Type.ANIMATION: "ANIMATION",
+	Type.CHARACTER: "CHARACTER"
+}
+
+enum EnemyType {
+	SOLDIER,
+	CAVALRY,
+	BOSS
+}
+
+var EnemyTypeName = {
+	EnemyType.SOLDIER: "SOLDIER",
+	EnemyType.CAVALRY: "CAVALRY",
+	EnemyType.BOSS: "BOSS",
 }
 
 enum Level {

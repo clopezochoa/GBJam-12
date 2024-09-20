@@ -26,8 +26,9 @@ func _ready() -> void:
 	get_tree().root.size = Vector2(160,144)
 	
 	var intro_scene = self.scenes.get_scene_by_name(Global.SceneName[Global.Scene.INTRO])
-	await load_scene(intro_scene)
-	get_node(intro_scene.name).connect("intro_ended", self.load_menu)
+	load_level1()
+	#await load_scene(intro_scene)
+	#get_node(intro_scene.name).connect("intro_ended", self.load_menu)
 
 func _process(_delta) -> void:
 	if Input.is_action_just_released("ui_page_up"):

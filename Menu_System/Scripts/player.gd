@@ -1,8 +1,10 @@
-extends Area2D
+extends Node2D
 
 signal defeated()
-signal player_update_position(position)
+signal player_update_position()
+signal player_stopped()
 signal on_meteor_deleted(meteor)
+signal player_shoot()
 
 @export var dash_offset = 0.1
 @export var dash_cooldown = 1.5
@@ -20,12 +22,21 @@ var delta_deadend = 0
 var isDashing = false
 var isMortal = true
 var dash_timer: Timer
+var players: PlayerControl = PlayerControl.new()
+var camera_position_y = 0.0
+
 
 func _ready():
-	self.dash_timer = $hero_mesh/dash_timer
-	self.dash_timer.wait_time = dash_cooldown
+	
+	var player_1: Area2D = get_node("Player_1")
+	var player_2: Area2D = get_node("Player_2")
+
+	players.add_players([PlayerInfo.new("Player 1", 0, Global.Layer.OVER, Global.Type.CHARACTER, "none", true, player_1), PlayerInfo.new("Player 2", 1, Global.Layer.OVER, Global.Type.CHARACTER, "none", true, player_2)])
+
+	#self.dash_timer = $hero_mesh/dash_timer
+	#self.dash_timer.wait_time = dash_cooldown
 	#$hero_animations.play("idle")
-	#self.set_defeat_animation(4)
+	#self.set_defeat_animation(4)$Player_1
 
 func _process(delta):
 	var power_up_context = null
@@ -44,32 +55,92 @@ func _process(delta):
 		_dash_handler()
 		
 	move(delta)
+	$Player_1/Label.text = str(players.get_player_by_id(0).instance.position.y).substr(0, 4)
+	$Player_2/Label.text = str(players.get_player_by_id(1).instance.position.y).substr(0, 4)
 		
 
 func move(delta):
 	if not Global.isDeafeated:
+		var currentPlayers: Array[PlayerInfo]
+		var otherPlayer: PlayerInfo
+		var currentSprites: Array[Sprite2D]
+		var otherSprite: Sprite2D
+		#var currentShootCooldown: Timer
+		
+		var player_1 = players.get_player_by_id(0)
+		var player_2 = players.get_player_by_id(1)
+		
+		if Input.is_action_pressed("b") and !Input.is_action_pressed("a"):
+			currentPlayers = [player_1]
+			otherPlayer = players.get_player_by_id(1)
+			currentSprites = [player_1.instance.get_node("Sprite2D")]
+		elif Input.is_action_pressed("a") and !Input.is_action_pressed("b"):
+			currentPlayers = [player_2]
+			otherPlayer = players.get_player_by_id(0)
+			currentSprites = [player_2.instance.get_node("Sprite2D")]
+		elif Input.is_action_pressed("a") and Input.is_action_pressed("b"):
+			currentPlayers = [player_1, player_2]
+			currentSprites = [player_1.instance.get_node("Sprite2D"), player_2.instance.get_node("Sprite2D")]
+		else:
+			emit_signal("player_stopped")
+			return
+				
+		var blockAdvance = false
+		if Input.is_action_pressed("dpad_down"):
+			blockAdvance = true
+		if otherPlayer:
+			otherSprite = otherPlayer.instance.get_node("Sprite2D")
+			otherSprite.texture = idleTex
+
+			
+
+			
+		#print(currentPlayers)
+		#currentShootCooldown = currentPlayer.instance.get_node("shoot_cooldown_timer")
 		
 		var velocity = Vector2.ZERO
 		var update_position = false
 
-		if Input.is_action_pressed("a"):
-			$hero_mesh.texture = spellTex
-		else:
-			$hero_mesh.texture = idleTex
-		
-		
+		#if Input.is_action_pressed("a") and currentShootCooldown.is_stopped() == true:
 		if Input.is_action_pressed("dpad_up"):
-			#$hero_animations.play("run_right")
-			velocity.y -= 1
-			update_position = true
+			for sprite in currentSprites:
+				sprite.texture = spellTex
 			
-		if Input.is_action_pressed("dpad_down"):
-			#$hero_animations.play("run_left")
-			if isDashing:
-				velocity.y += 1
-				update_position = true
+			player_shoot.emit(currentPlayers)
+			#for player in currentPlayers:
+				#await get_tree().create_timer(25.0) # Replace delay_time with your desired delay in seconds
+				#currentShootCooldown.start()
+		else:
+			for sprite in currentSprites:
+				sprite.texture = idleTex
+				
+
 		
-		if Input.is_action_pressed("dpad_right"):
+		
+		#if Input.is_action_pressed("dpad_up"):
+			##$hero_animations.play("run_right")
+			#if currentPlayer.instance.global_position.y > otherPlayer.instance.global_position.y or currentPlayer.instance.global_position.y > (otherPlayer.instance.global_position.y - 60) or currentPlayer.instance.global_position.y == 0:
+				#velocity.y -= 1
+				#update_position = true				
+			#
+		#if Input.is_action_pressed("dpad_down"):
+			#$hero_animations.play("run_left")
+			#if isDashing:
+				#velocity.y += 1
+				#update_position = true
+				
+		
+		for player in currentPlayers:
+			if Input.is_action_pressed("dpad_down"):
+				print(self.camera_position_y)
+				if (self.camera_position_y) > (player.instance.position.y):
+					if otherPlayer:
+						if player.instance.global_position.y < otherPlayer.instance.global_position.y or player.instance.global_position.y < (otherPlayer.instance.global_position.y + 40):
+							velocity.y += 1
+					else:
+						velocity.y += 1	
+						
+			if Input.is_action_pressed("dpad_right"):
 			#if power_up_context == Global.PowerUp.BIG:
 				#$hero_animations.play("run_right_BIG")
 			#elif power_up_context == Global.PowerUp.SMALL:
@@ -77,10 +148,24 @@ func move(delta):
 			#elif power_up_context == null:
 				#$hero_animations.play("run_right")
 				#
-			if position.x < 80:
-				velocity.x += 1
+				if otherPlayer:
+					if player.instance.position.x < 160:
+						velocity.x += 1
+				else:
+					if player_1.instance.position.x < 160 and player_2.instance.position.x < 160:
+						velocity.x += 1
+
+				
+				if not blockAdvance:
+					if otherPlayer:
+						if player.instance.global_position.y > otherPlayer.instance.global_position.y or player.instance.global_position.y > (otherPlayer.instance.global_position.y - 60) or player.instance.global_position.y == 0:
+							velocity.y -= 1
+					else:
+						velocity.y -= 1	
+
+
 				update_position = true
-		elif Input.is_action_pressed("dpad_left"):
+			elif Input.is_action_pressed("dpad_left"):
 			#if power_up_context == Global.PowerUp.BIG:
 				#$hero_animations.play("run_left_BIG")
 			#elif power_up_context == Global.PowerUp.SMALL:
@@ -88,8 +173,22 @@ func move(delta):
 			#elif power_up_context == null:
 				#$hero_animations.play("run_left")
 			#
-			if position.x > -80:
-				velocity.x -= 1
+			#for player in currentPlayers:
+				if otherPlayer:
+					if player.instance.position.x > 0:
+						velocity.x -= 1
+				else:
+					if player_1.instance.position.x > 0 and player_2.instance.position.x > 0:
+						velocity.x -= 1
+						
+											
+				if not blockAdvance:
+					if otherPlayer:
+						if player.instance.global_position.y > otherPlayer.instance.global_position.y or player.instance.global_position.y > (otherPlayer.instance.global_position.y - 60) or player.instance.global_position.y == 0:
+							velocity.y -= 1
+					else:
+						velocity.y -= 1	
+
 				update_position = true
 		#else:
 			#if power_up_context == Global.PowerUp.BIG:
@@ -102,11 +201,15 @@ func move(delta):
 			#player_run_sfx.stop()
 	#			isDashing = false
 			
-		velocity = velocity.normalized() * self.active_speed
-		position += velocity * delta
+			velocity = velocity.normalized() * self.active_speed
+			player.instance.position += velocity * delta
 
-		if update_position:
-			emit_signal("player_update_position", $".".global_position)
+			if update_position:
+				emit_signal("player_update_position", (player))
+			else:
+				emit_signal("player_stopped")
+
+
 			#if not player_run_sfx.playing:
 				#player_run_sfx.play()
 		#if Input.is_action_just_pressed("dpad_down"):
@@ -132,12 +235,12 @@ func _dash_handler()-> void:
 		isDashing = false
 	elif isDashing and counter < delta_deadend:
 		self.active_speed = dash_speed
-	elif Input.is_action_just_pressed("dpad_down") and not isDashing and dash_timer.is_stopped():
-		dash_timer.start()
-		self.active_speed = dash_speed
-		isDashing = true
-		#move(0.1)
-		delta_deadend = counter + dash_offset
+	#elif Input.is_action_just_pressed("dpad_down") and not isDashing and dash_timer.is_stopped():
+		#dash_timer.start()
+		#self.active_speed = dash_speed
+		#isDashing = true
+		##move(0.1)
+		#delta_deadend = counter + dash_offset
 
 func _power_up_handler()-> void:
 	if not isDashing and power_up != null:
@@ -246,3 +349,7 @@ class PowerUp:
 		if not self.type == Global.PowerUp.SHIELD:
 			self.destroy_time = _counter + self.charge
 		# PLAY TRANSFORM ANIMATION
+
+
+func _on_player_camera_camera_move(camera_position_y: float) -> void:
+	self.camera_position_y = camera_position_y

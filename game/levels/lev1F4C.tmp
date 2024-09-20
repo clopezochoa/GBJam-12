@@ -1,9 +1,8 @@
-[gd_scene load_steps=20 format=3 uid="uid://duivdh4a5que7"]
+[gd_scene load_steps=19 format=3 uid="uid://duivdh4a5que7"]
 
 [ext_resource type="Script" path="res://game/levels/level_1_alpha_test.gd" id="1_4novl"]
 [ext_resource type="PackedScene" uid="uid://ga08fi1u5kdl" path="res://Menu_System/Scenes/player.tscn" id="1_gcv57"]
 [ext_resource type="PackedScene" uid="uid://wam7yyo7p770" path="res://ui/in-game/win_screen.tscn" id="2_ehymt"]
-[ext_resource type="PackedScene" uid="uid://ccx7pvyauhxfp" path="res://scenes/characters/enemy.tscn" id="3_dadko"]
 [ext_resource type="Script" path="res://game/levels/player_camera.gd" id="4_di0ee"]
 [ext_resource type="PackedScene" uid="uid://b6en1kjbe11nn" path="res://Menu_System/Scenes/pause_screen.tscn" id="5_7att2"]
 [ext_resource type="Texture2D" uid="uid://ccharkgn8nwbv" path="res://assets/graphic/environment/env_01/background/farthest_plane/tileset/bg_1_sheet.png" id="5_t0u7i"]
@@ -12,9 +11,17 @@
 [ext_resource type="AudioStream" uid="uid://cl3i7svr4j82y" path="res://assets/audio/music/menu-actions/click.mp3" id="7_tpnfv"]
 [ext_resource type="PackedScene" uid="uid://bj08btic8c155" path="res://scenes/postprocesses_layers/wrap_to_circle.tscn" id="11_0jys7"]
 [ext_resource type="Script" path="res://scripts/environment/env_01/background/farthest_plane/bg_movement.gd" id="12_akmg6"]
-[ext_resource type="Script" path="res://animations/bg_control.gd" id="12_da86k"]
+[ext_resource type="Script" path="res://animations/autoload.gd" id="12_da86k"]
 [ext_resource type="Shader" path="res://scripts/postprocesses_layers/color_4_post_process.gdshader" id="13_3pygw"]
-[ext_resource type="Animation" uid="uid://b6kq1g6q7oeq1" path="res://animations/bg.res" id="14_1dcl2"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_kmf8p"]
+shader = ExtResource("13_3pygw")
+shader_parameter/color1 = Color(0.0980392, 0, 0, 1)
+shader_parameter/color2 = Color(0.337255, 0.0352941, 0.0352941, 1)
+shader_parameter/color3 = Color(0.678431, 0.12549, 0.12549, 1)
+shader_parameter/color4 = Color(0.94902, 0.901961, 0.901961, 1)
+shader_parameter/simple_shading_mode = true
+shader_parameter/brightness_factor = 0.0
 
 [sub_resource type="Animation" id="Animation_xisb7"]
 length = 0.001
@@ -31,34 +38,39 @@ tracks/0/keys = {
 "values": [0]
 }
 
+[sub_resource type="Animation" id="Animation_7rj75"]
+resource_name = "bg"
+length = 10.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 10),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0, 63]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_aflye"]
 _data = {
 "RESET": SubResource("Animation_xisb7"),
-"bg": ExtResource("14_1dcl2")
+"bg": SubResource("Animation_7rj75")
 }
 
 [sub_resource type="Curve2D" id="Curve2D_hkp0j"]
 _data = {
-"points": PackedVector2Array(-58.5003, 24.8468, 50, -15, 0, 0, -50, -15, 0, 0, 160, 0)
+"points": PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 160, 0)
 }
 point_count = 2
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_kmf8p"]
-shader = ExtResource("13_3pygw")
-shader_parameter/color1 = Color(0.0980392, 0, 0, 1)
-shader_parameter/color2 = Color(0.337255, 0.0352941, 0.0352941, 1)
-shader_parameter/color3 = Color(0.678431, 0.12549, 0.12549, 1)
-shader_parameter/color4 = Color(0.94902, 0.901961, 0.901961, 1)
-shader_parameter/simple_shading_mode = true
-shader_parameter/brightness_factor = 0.0
 
 [node name="level_1_alpha_test" type="Node"]
 script = ExtResource("1_4novl")
 win_screen = ExtResource("2_ehymt")
-enemy_scene = ExtResource("3_dadko")
 
 [node name="Player" parent="." instance=ExtResource("1_gcv57")]
-position = Vector2(0, 125)
 dash_speed = 300
 metadata/_edit_group_ = true
 
@@ -90,58 +102,6 @@ one_shot = true
 layer = -100
 visible = false
 
-[node name="player_camera" type="Camera2D" parent="."]
-position = Vector2(1, 0)
-offset = Vector2(0, 72)
-limit_left = 0
-limit_right = 160
-script = ExtResource("4_di0ee")
-
-[node name="bg" type="Sprite2D" parent="player_camera"]
-z_index = -1
-position = Vector2(80, 72)
-texture = ExtResource("5_t0u7i")
-hframes = 8
-vframes = 8
-script = ExtResource("12_akmg6")
-
-[node name="bg_animation" type="AnimationPlayer" parent="player_camera/bg"]
-libraries = {
-"": SubResource("AnimationLibrary_aflye")
-}
-script = ExtResource("12_da86k")
-
-[node name="MobPath" type="Path2D" parent="player_camera"]
-position = Vector2(0, 52)
-curve = SubResource("Curve2D_hkp0j")
-
-[node name="MobSpawnLocation" type="PathFollow2D" parent="player_camera/MobPath"]
-rotation = -0.291457
-
-[node name="StartPosition" type="Marker2D" parent="player_camera"]
-position = Vector2(0, 52)
-
-[node name="Label" type="Label" parent="player_camera"]
-offset_left = 40.0
-offset_right = 126.0
-offset_bottom = 23.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 12
-
-[node name="MobTimer" type="Timer" parent="."]
-
-[node name="ScoreTimer" type="Timer" parent="."]
-
-[node name="StartTimer" type="Timer" parent="."]
-wait_time = 0.1
-one_shot = true
-
-[node name="_debug" type="Timer" parent="."]
-autostart = true
-
-[node name="Enemy" parent="." instance=ExtResource("3_dadko")]
-visible = false
-
 [node name="color_4_post_process2" type="CanvasLayer" parent="."]
 
 [node name="ColorRect" type="ColorRect" parent="color_4_post_process2"]
@@ -154,13 +114,51 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_use_anchors_ = true
 
+[node name="player_camera" type="Camera2D" parent="."]
+position = Vector2(50, -23)
+offset = Vector2(0, -17.835)
+limit_left = 0
+limit_right = 160
+script = ExtResource("4_di0ee")
+
+[node name="bg" type="Sprite2D" parent="player_camera"]
+z_index = -1
+position = Vector2(30, -17)
+texture = ExtResource("5_t0u7i")
+hframes = 8
+vframes = 8
+script = ExtResource("12_akmg6")
+
+[node name="bg_animation" type="AnimationPlayer" parent="player_camera/bg"]
+libraries = {
+"": SubResource("AnimationLibrary_aflye")
+}
+script = ExtResource("12_da86k")
+
+[node name="MobPath" type="Path2D" parent="player_camera"]
+position = Vector2(-50, -91)
+curve = SubResource("Curve2D_hkp0j")
+
+[node name="MobSpawnLocation" type="PathFollow2D" parent="player_camera/MobPath"]
+
+[node name="StartPosition" type="Marker2D" parent="player_camera"]
+position = Vector2(-50, -91)
+
+[node name="MobTimer" type="Timer" parent="."]
+wait_time = 0.5
+
+[node name="ScoreTimer" type="Timer" parent="."]
+
+[node name="StartTimer" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true
+
+[node name="_debug" type="Timer" parent="."]
+autostart = true
+
 [connection signal="player_shoot" from="Player" to="." method="_on_player_player_shoot"]
-[connection signal="player_stopped" from="Player" to="player_camera/bg/bg_animation" method="_on_player_player_stopped"]
 [connection signal="player_update_position" from="Player" to="player_camera" method="_on_player_player_update_position"]
-[connection signal="player_update_position" from="Player" to="player_camera/bg/bg_animation" method="_on_player_player_update_position"]
 [connection signal="unpause" from="Pause Screen" to="." method="_on_pause_screen_unpause"]
-[connection signal="CameraMove" from="player_camera" to="Player" method="_on_player_camera_camera_move"]
-[connection signal="GetCameraPosition" from="player_camera" to="Enemy" method="_on_player_camera_get_camera_position"]
 [connection signal="timeout" from="MobTimer" to="." method="_on_mob_timer_timeout"]
 [connection signal="timeout" from="ScoreTimer" to="." method="_on_score_timer_timeout"]
 [connection signal="timeout" from="StartTimer" to="." method="_on_start_timer_timeout"]
