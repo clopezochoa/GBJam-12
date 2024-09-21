@@ -23,4 +23,4 @@ func _on_player_player_update_position(player: PlayerInfo) -> void:
 		self.position.y = farthestPosition
 		#print(farthestPosition)
 		self.CameraMove.emit(farthestPosition)
-		$"Label".text = str(farthestPosition).substr(0, 5)
+		$"Score".text = str(int(floor(abs(farthestPosition))))

@@ -13,8 +13,8 @@ func _init(enemies: Array[EnemyInfo] = []):
 func add_enemies(enemies_to_add: Array[EnemyInfo]):
 	self.enemies.append_array(enemies_to_add)
 	
-func add_enemyFromArea2D(id: int, value: Area2D):
-	var new_enemy = EnemyInfo.new(id, Global.Layer.OVER, Global.Type.CHARACTER, Global.EnemyType.SOLDIER, true, value)
+func add_enemyFromArea2D(id: int, value: Area2D, currentSpeed: float):
+	var new_enemy = EnemyInfo.new(id, Global.Layer.OVER, Global.Type.CHARACTER, Global.EnemyType.SOLDIER, true, value, currentSpeed)
 	self.enemies.push_back(new_enemy)
 	return new_enemy
 	

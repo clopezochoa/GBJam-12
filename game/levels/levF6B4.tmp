@@ -1,11 +1,10 @@
-[gd_scene load_steps=22 format=3 uid="uid://duivdh4a5que7"]
+[gd_scene load_steps=20 format=3 uid="uid://duivdh4a5que7"]
 
 [ext_resource type="Script" path="res://game/levels/level_1_alpha_test.gd" id="1_4novl"]
 [ext_resource type="PackedScene" uid="uid://ga08fi1u5kdl" path="res://Menu_System/Scenes/player.tscn" id="1_gcv57"]
 [ext_resource type="PackedScene" uid="uid://wam7yyo7p770" path="res://ui/in-game/win_screen.tscn" id="2_ehymt"]
 [ext_resource type="PackedScene" uid="uid://ccx7pvyauhxfp" path="res://scenes/characters/enemy.tscn" id="3_dadko"]
 [ext_resource type="Script" path="res://game/levels/player_camera.gd" id="4_di0ee"]
-[ext_resource type="PackedScene" uid="uid://ci2jdarb2x0to" path="res://scenes/characters/enemy/explosion.tscn" id="4_nm6sn"]
 [ext_resource type="PackedScene" uid="uid://b6en1kjbe11nn" path="res://Menu_System/Scenes/pause_screen.tscn" id="5_7att2"]
 [ext_resource type="Texture2D" uid="uid://ccharkgn8nwbv" path="res://assets/graphic/environment/env_01/background/farthest_plane/tileset/bg_1_sheet.png" id="5_t0u7i"]
 [ext_resource type="AudioStream" uid="uid://wycpmwt87okm" path="res://assets/audio/sfx/characters/hero/sounds/run/run.mp3" id="5_xrsal"]
@@ -16,7 +15,6 @@
 [ext_resource type="Script" path="res://animations/bg_control.gd" id="12_da86k"]
 [ext_resource type="Shader" path="res://scripts/postprocesses_layers/color_4_post_process.gdshader" id="13_3pygw"]
 [ext_resource type="Animation" uid="uid://b6kq1g6q7oeq1" path="res://animations/bg.res" id="14_1dcl2"]
-[ext_resource type="Theme" uid="uid://g175br3gjr52" path="res://ui/main-menu/main_menu.tres" id="16_vo4sp"]
 
 [sub_resource type="Animation" id="Animation_xisb7"]
 length = 0.001
@@ -58,7 +56,6 @@ shader_parameter/brightness_factor = 0.0
 script = ExtResource("1_4novl")
 win_screen = ExtResource("2_ehymt")
 enemy_scene = ExtResource("3_dadko")
-explosion_scene = ExtResource("4_nm6sn")
 
 [node name="Player" parent="." instance=ExtResource("1_gcv57")]
 position = Vector2(0, 125)
@@ -102,7 +99,7 @@ script = ExtResource("4_di0ee")
 
 [node name="bg" type="Sprite2D" parent="player_camera"]
 z_index = -1
-position = Vector2(79, 72)
+position = Vector2(80, 72)
 texture = ExtResource("5_t0u7i")
 hframes = 8
 vframes = 8
@@ -124,16 +121,12 @@ rotation = -0.291457
 [node name="StartPosition" type="Marker2D" parent="player_camera"]
 position = Vector2(0, 52)
 
-[node name="Score" type="Label" parent="player_camera"]
-offset_top = 1.0
-offset_right = 157.0
-offset_bottom = 13.0
-theme = ExtResource("16_vo4sp")
-theme_override_colors/font_color = Color(0.981538, 0.474726, 0.430018, 1)
-theme_override_colors/font_shadow_color = Color(0.337255, 0.0352941, 0.0352941, 1)
-theme_override_font_sizes/font_size = 8
-text = "0"
-horizontal_alignment = 2
+[node name="Label" type="Label" parent="player_camera"]
+offset_left = 40.0
+offset_right = 126.0
+offset_bottom = 23.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 12
 
 [node name="MobTimer" type="Timer" parent="."]
 
@@ -147,9 +140,6 @@ one_shot = true
 autostart = true
 
 [node name="Enemy" parent="." instance=ExtResource("3_dadko")]
-visible = false
-
-[node name="Explosion" parent="." instance=ExtResource("4_nm6sn")]
 visible = false
 
 [node name="color_4_post_process2" type="CanvasLayer" parent="."]

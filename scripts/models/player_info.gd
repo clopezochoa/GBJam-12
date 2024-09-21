@@ -10,9 +10,10 @@ var type: Global.Type
 var currentPowerup: String
 var isAlive: bool
 var instance: Area2D
+var timer: Timer
 
 # Constructor
-func _init(_name: String, _id: int, _layer: Global.Layer, _type: Global.Type, _currentPowerup: String, _isAlive: bool, _instance: Area2D):
+func _init(_name: String, _id: int, _layer: Global.Layer, _type: Global.Type, _currentPowerup: String, _isAlive: bool, _instance: Area2D, _timer: Timer):
 	self.name = _name
 	self.id = _id
 	self.layer = _layer
@@ -20,3 +21,4 @@ func _init(_name: String, _id: int, _layer: Global.Layer, _type: Global.Type, _c
 	self.currentPowerup = _currentPowerup
 	self.isAlive = _isAlive
 	self.instance = _instance
+	self.timer = _timer

@@ -25,14 +25,15 @@ var dash_timer: Timer
 var players: PlayerControl = PlayerControl.new()
 var camera_position_y = 0.0
 
-
 func _ready():
 	
 	var player_1: Area2D = get_node("Player_1")
 	var player_2: Area2D = get_node("Player_2")
+	
+	var shoot_cooldown_1: Timer = get_node("Player_1/shoot_cooldown_timer")
+	var shoot_cooldown_2: Timer = get_node("Player_2/shoot_cooldown_timer")
 
-	players.add_players([PlayerInfo.new("Player 1", 0, Global.Layer.OVER, Global.Type.CHARACTER, "none", true, player_1), PlayerInfo.new("Player 2", 1, Global.Layer.OVER, Global.Type.CHARACTER, "none", true, player_2)])
-
+	players.add_players([PlayerInfo.new("Player 1", 0, Global.Layer.OVER, Global.Type.CHARACTER, "none", true, player_1, shoot_cooldown_1), PlayerInfo.new("Player 2", 1, Global.Layer.OVER, Global.Type.CHARACTER, "none", true, player_2, shoot_cooldown_2)])
 	#self.dash_timer = $hero_mesh/dash_timer
 	#self.dash_timer.wait_time = dash_cooldown
 	#$hero_animations.play("idle")
@@ -55,8 +56,15 @@ func _process(delta):
 		_dash_handler()
 		
 	move(delta)
-	$Player_1/Label.text = str(players.get_player_by_id(0).instance.position.y).substr(0, 4)
-	$Player_2/Label.text = str(players.get_player_by_id(1).instance.position.y).substr(0, 4)
+	$Player_1/Label.text = str(players.get_player_by_id(0).timer.is_stopped())
+	$Player_2/Label.text = str(players.get_player_by_id(1).timer.is_stopped())
+	
+	if players.get_player_by_id(0).timer.is_stopped():
+		var line_1 = $Player_1.get_node("Line2D") as Line2D
+		line_1.set_point_position(1, Vector2(0, 0) )
+	if players.get_player_by_id(1).timer.is_stopped():
+		var line_2 = $Player_2.get_node("Line2D") as Line2D
+		line_2.set_point_position(1, Vector2(0, 0) )
 		
 
 func move(delta):
@@ -103,10 +111,18 @@ func move(delta):
 
 		#if Input.is_action_pressed("a") and currentShootCooldown.is_stopped() == true:
 		if Input.is_action_pressed("dpad_up"):
-			for sprite in currentSprites:
-				sprite.texture = spellTex
+			var active_shooters: Array[PlayerInfo] = []
+			var availablePlayers = players.get_available_shooters()
+			for player in currentPlayers:
+				if availablePlayers.has(player):
+					player.instance.get_node("Sprite2D").texture = spellTex
+					active_shooters.push_back(player)
+					player.timer.start()
+			#for sprite in currentSprites:
+				#sprite.texture = spellTex
+			player_shoot.emit(active_shooters)
 			
-			player_shoot.emit(currentPlayers)
+
 			#for player in currentPlayers:
 				#await get_tree().create_timer(25.0) # Replace delay_time with your desired delay in seconds
 				#currentShootCooldown.start()
@@ -132,7 +148,6 @@ func move(delta):
 		
 		for player in currentPlayers:
 			if Input.is_action_pressed("dpad_down"):
-				print(self.camera_position_y)
 				if (self.camera_position_y) > (player.instance.position.y):
 					if otherPlayer:
 						if player.instance.global_position.y < otherPlayer.instance.global_position.y or player.instance.global_position.y < (otherPlayer.instance.global_position.y + 40):
@@ -150,10 +165,10 @@ func move(delta):
 				#
 				if otherPlayer:
 					if player.instance.position.x < 160:
-						velocity.x += 1
+						velocity.x += 2.0
 				else:
 					if player_1.instance.position.x < 160 and player_2.instance.position.x < 160:
-						velocity.x += 1
+						velocity.x += 2.0
 
 				
 				if not blockAdvance:
@@ -176,10 +191,10 @@ func move(delta):
 			#for player in currentPlayers:
 				if otherPlayer:
 					if player.instance.position.x > 0:
-						velocity.x -= 1
+						velocity.x -= 2
 				else:
 					if player_1.instance.position.x > 0 and player_2.instance.position.x > 0:
-						velocity.x -= 1
+						velocity.x -= 2.0
 						
 											
 				if not blockAdvance:

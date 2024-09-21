@@ -10,11 +10,23 @@ var meteorite_pool: Array[MeteoriteBlock] = []
 
 @export var win_screen: PackedScene
 @export var enemy_scene: PackedScene
+@export var explosion_scene: PackedScene
 
 var enemies: EnemyControl = EnemyControl.new()
 var cumulative: int = 0
 
+var enemy_width = 15.0
+var path_width = 160.0
+var lane_count = int(floor(path_width / enemy_width))
+var spawn_points: Array[float] = []
+var latest_spawn_idx: int = -1
+
+var base_enemy_velocity: float = 1.0
+
 func _ready() -> void:
+	for point in range(1, self.lane_count - 1):
+		self.spawn_points.append((float(point) * self.enemy_width)/(self.path_width - self.enemy_width))
+			
 	Global.isDeafeated = false
 	
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -26,6 +38,8 @@ func _ready() -> void:
 	$Player.connect("defeated", self._on_defeat)
 	$Player.connect("player_update_position", self._on_player_move)
 	$Player.connect("on_meteor_deleted", self._on_meteor_deleted)
+	$"difficulty_step".connect("timeout", self._on_difficulty_step)
+
 
 	#$Enemy.connect("enemy_freed", self._on_enemy_freed)	
 
@@ -59,8 +73,7 @@ func _ready() -> void:
 	
 	
 func _process(_delta: float) -> void:
-	enemies.wipe_unseen($player_camera.global_position.y + 120)
-	print(len(enemies.enemies))
+	enemies.wipe_unseen($player_camera.global_position.y + 144)
 	
 	if $"Pause Timer".is_stopped() == true:
 		if Input.is_action_pressed("pause"):
@@ -195,36 +208,25 @@ func _on_sort_by_height(a,b):
 
 func _on_mob_timer_timeout() -> void:
 	self.cumulative += 1
-	
+
 		# Create a new instance of the Mob scene.
 	var enemy = enemy_scene.instantiate()
-	var enemyObj = enemies.add_enemyFromArea2D(self.cumulative, enemy)
-	#self.on_enemy_registered.emit(enemyObj)
-	#enemies.add_enemies([mob])
-	#print(enemies.enemies)
+	var enemyObj = enemies.add_enemyFromArea2D(self.cumulative, enemy, self.base_enemy_velocity)
+	self.on_enemy_registered.emit(enemyObj)
+
 	var enemy_spawn_location = $player_camera/MobPath/MobSpawnLocation
-	enemy_spawn_location.progress_ratio = randf()
-	enemy.position = Vector2(enemy_spawn_location.position.x, enemy_spawn_location.position.y + $player_camera.position.y +(144/4))
 
-	# Set the mob's direction perpendicular to the path direction.
-	#var direction = mob_spawn_location.rotation + PI / 2
-
-	# Set the mob's position to a random location.
-
-	# Add some randomness to the direction.
-	#direction += randf_range(-PI / 4, PI / 4)
-	#mob.rotation = direction
-
-	# Choose the velocity for the mob.
-	#var velocity = Vector2(randf_range(150.0, 250.0), 0.0)
-
-	# Spawn the mob by adding it to the Main scene.
-	add_child(enemy)
+	var available_points = self.spawn_points.duplicate()  # Copy the normalized points
+	if self.latest_spawn_idx != -1:
+		available_points.remove_at(self.latest_spawn_idx)  # Remove the last spawn point
+	var new_spawn_index = randi() % available_points.size()
+	self.latest_spawn_idx = new_spawn_index
+	var spawn_ratio = available_points[new_spawn_index]
 	
-	#enemyList.sort_custom(_on_sort_by_height)
-	#var enemyToConnect = enemies.get_enemy_by_id(self.cumulative).instance
-	#if enemyToConnect:
-		#enemyToConnect.connect("enemy_freed", self._on_enemy_freed)
+	enemy_spawn_location.progress_ratio = spawn_ratio
+	enemy.position = Vector2(enemy_spawn_location.position.x, enemy_spawn_location.position.y + $player_camera.position.y +(144/4))
+	
+	add_child(enemy)
 
 func _on_score_timer_timeout() -> void:
 	score += 1
@@ -232,14 +234,6 @@ func _on_score_timer_timeout() -> void:
 func _on_start_timer_timeout() -> void:
 	$MobTimer.start()
 	$ScoreTimer.start()
-
-#func _on_enemy_freed(enemy: EnemyInfo) -> void:
-	#print(len(enemies.enemies))
-	#enemies.delete_enemies([enemy])
-	##enemy.instance.queue_free()
-	#print(len(enemies.enemies))
-	##enemyList.erase(enemy)
-	#
 
 #func _on_player_update_position(player: PlayerInfo) -> void:
 	#print(player.name + " moved")
@@ -249,39 +243,44 @@ func _on_start_timer_timeout() -> void:
 func _on_player_player_shoot(players: Array[PlayerInfo]) -> void:
 	for player in players:
 		var closestEnemy: EnemyInfo = null
-		#var closestEnemyDiff: int = -1
 		for enemy in enemies.enemies:
-			#print(enemy.instance.global_position.y)
-			#print(player.instance.position.y)
-			#print(enemy.instance.global_position.y, player.instance.position.y)
-			#if abs(enemy.instance.global_position.y - $player_camera.global_position.y) < 35 and (enemy.instance.global_position.y - 100) > $player_camera.global_position.y:
-			
+			enemy.isAlive = true
+			var enemy_sprite = enemy.instance.get_node("EnemySprite")  # Get the Sprite2D node
 			if enemy.instance.global_position.y > player.instance.global_position.y:
+				print('enemy under player')
+				#var enemy_sprite = enemy.instance.get_node("EnemySprite")  # Get the Sprite2D node
+				enemy_sprite.modulate = Color(0, 1, 0)  # Green color (R=0, G=1, B=0)
 				continue
-			#var diff = abs(enemy.global_position.x - position.x) + abs(enemy.global_position.y - position.y)
 			if enemy.instance.global_position.x > player.instance.position.x - 15 and enemy.instance.global_position.x < player.instance.position.x + 15:
 				closestEnemy = enemy
+				enemy_sprite.modulate = Color(1, 0, 0)  # Green color (R=0, G=1, B=0)
 				break
-				
-			#if (closestEnemy == null) or (diff < closestEnemyDiff):
-			#if (closestEnemy == null):
-				#closestEnemy = enemy
-				#closestEnemyDiff = diff
-				
+			enemy_sprite.modulate = Color(0, 1, 1)  # Green color (R=0, G=1, B=0)
+			
+
 		if closestEnemy != null:
+			var line = player.instance.get_node("Line2D") as Line2D
+			line.set_point_position(1, closestEnemy.instance.global_position - player.instance.global_position)
+			print('kill')
+			closestEnemy.isAlive = false
+			var explosion = explosion_scene.instantiate()
+			explosion.position = closestEnemy.instance.position
+			add_child(explosion)
 			var enemy_sprite = closestEnemy.instance.get_node("EnemySprite")  # Get the Sprite2D node
 			if enemy_sprite and enemy_sprite is Sprite2D:
-				enemy_sprite.modulate = Color(0, 1, 0)  # Green color (R=0, G=1, B=0)
-			
-			#closestEnemy.queue_free()
+				enemy_sprite.modulate = Color(1, 1, 0)  # Green color (R=0, G=1, B=0)
 			var closestEnemyTimer: Timer = closestEnemy.instance.get_node('Death')
 			closestEnemyTimer.connect("timeout", Callable(self, "_kill").bind(closestEnemy))
 			closestEnemyTimer.start()
+
+
 			
-					
-			
-		
 
 func _kill(enemy_to_kill: EnemyInfo):
 	enemies.delete_enemies([enemy_to_kill])
 	
+	
+func _on_difficulty_step():
+	self.base_enemy_velocity += 1.0
+	for enemy in self.enemies.enemies:
+		enemy.base_velocity = self.base_enemy_velocity
