@@ -78,5 +78,5 @@ theme_override_colors/font_outline_color = Color(0, 1, 0, 1)
 theme_override_font_sizes/font_size = 10
 
 [node name="Death" type="Timer" parent="."]
-wait_time = 0.5
+wait_time = 0.05
 one_shot = true

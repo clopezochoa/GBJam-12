@@ -26,9 +26,8 @@ func _ready() -> void:
 	get_tree().root.size = Vector2(160,144)
 	
 	var intro_scene = self.scenes.get_scene_by_name(Global.SceneName[Global.Scene.INTRO])
-	load_level1()
-	#await load_scene(intro_scene)
-	#get_node(intro_scene.name).connect("intro_ended", self.load_menu)
+	await load_scene(intro_scene)
+	get_node(intro_scene.name).connect("intro_ended", self.load_menu)
 
 func _process(_delta) -> void:
 	if Input.is_action_just_released("ui_page_up"):
@@ -43,26 +42,31 @@ func _set_game_window_size():
 	get_tree().root.size = Vector2(160 * self.game_window_scale, 144 * self.game_window_scale)
 	await get_tree().create_timer(1).timeout
 
-func load_scene(scene: SceneInfo)->void:
+func load_scene(scene: SceneInfo, play_transition_music: bool = false)->void:
 	var current_scene = self.scenes.get_current()
 	if current_scene != null:
-		await remove_scene(current_scene)
+		await remove_scene(current_scene, play_transition_music)
 	self.scenes.set_current(scene)
 	var scene_instace = scene.packed_scene.instantiate()
 	scene_instace.name = scene.name
 	add_child(scene_instace)
-	#if scene.id != 0:
-		#await Global.fade(false)
+	if scene.id != 0:
+		await Global.fade(false)
 	
-func remove_scene(scene: SceneInfo)->void:
-	#if scene.id != 0:
-		#await Global.fade(true)
+func remove_scene(scene: SceneInfo, play_transition_music: bool = false)->void:
+	if scene.id != 0:
+		await Global.fade(true, play_transition_music)
 	get_node(scene.name).queue_free()
 
-func load_menu() ->void:
+func load_menu(play_transition_music: bool = false) ->void:
 	var main_menu_scene = scenes.get_scene_by_name(Global.SceneName[Global.Scene.MAIN_MENU])
-	await load_scene(main_menu_scene)
+	await load_scene(main_menu_scene, play_transition_music)
 	get_node(main_menu_scene.name).connect("play_pressed",self.load_level1)
+	
+#func load_score() -> void:
+	#var score_scene = scenes.get_scene_by_name((Global.SceneName[Global.Scene.SCORE]))
+	#await load_scene(score_scene)
+	#get_node(score_scene.name).connect("play_pressed",self.load_level1)
 
 func load_level1()->void:
 	Global.score.add_levels([Global.Level.LEVEL_1])
@@ -70,6 +74,8 @@ func load_level1()->void:
 	await load_scene(level_1_scene)
 	var level_1_node = get_node(level_1_scene.name)
 	level_1_node.connect("exit_game", self.load_menu)
-	level_1_node.connect("defeat", self.load_menu)
+	level_1_node.connect("defeat", Callable(self, "load_menu").bind(true))
 	level_1_node.connect("win", self.load_menu)
 	
+func _on_timer_timeout() -> void:
+	self.load_menu()

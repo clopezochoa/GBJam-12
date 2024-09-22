@@ -4,9 +4,10 @@ class_name EnemyControl
 
 var enemies: Array[EnemyInfo]
 var current_enemy: EnemyInfo
+var enemy_score: int = 0
 
-func _init(enemies: Array[EnemyInfo] = []):
-	if len(enemies) != 0:
+func _init(_enemies: Array[EnemyInfo] = []):
+	if len(_enemies) > 0:
 		for enemy in enemies:
 			self.enemies.push_back(enemy)
 
@@ -47,4 +48,6 @@ func wipe_unseen(camera_low_limit: float):
 		if enemy.instance.global_position.y > camera_low_limit:
 			enemies_to_wipe.append(enemy)
 	if enemies_to_wipe and len(enemies_to_wipe) > 0:
+		for enemy in enemies_to_wipe:
+			enemy_score += 1
 		self.delete_enemies(enemies_to_wipe)

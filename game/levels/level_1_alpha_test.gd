@@ -6,6 +6,7 @@ signal win
 signal on_enemy_registered(enemy: EnemyInfo)
 
 var	score = 0
+var initial_life_pts = 8
 var meteorite_pool: Array[MeteoriteBlock] = []
 
 @export var win_screen: PackedScene
@@ -22,6 +23,7 @@ var spawn_points: Array[float] = []
 var latest_spawn_idx: int = -1
 
 var base_enemy_velocity: float = 1.0
+var health_tracker: int = initial_life_pts
 
 func _ready() -> void:
 	for point in range(1, self.lane_count - 1):
@@ -74,6 +76,15 @@ func _ready() -> void:
 	
 func _process(_delta: float) -> void:
 	enemies.wipe_unseen($player_camera.global_position.y + 144)
+	var current_health = self.initial_life_pts - enemies.enemy_score
+	if current_health < 0:
+		self._on_defeat()
+		
+	if self.health_tracker > current_health:
+		$HurtSfx.play()
+		self.health_tracker = current_health
+		
+	$"player_camera/Life".text = Global.drawSymbolsFromRange(current_health, "+")
 	
 	if $"Pause Timer".is_stopped() == true:
 		if Input.is_action_pressed("pause"):
@@ -139,7 +150,7 @@ func _on_pause_screen_unpause() -> void:
 	
 func _on_defeat() -> void:
 	Global.score.set_score_by_level(Global.Level.LEVEL_1, true)
-	Global.score.set_current(0)
+	# Global.score.set_current(0)
 	emit_signal("defeat")
 	
 func _on_player_move(_position) -> void:
@@ -247,21 +258,15 @@ func _on_player_player_shoot(players: Array[PlayerInfo]) -> void:
 			enemy.isAlive = true
 			var enemy_sprite = enemy.instance.get_node("EnemySprite")  # Get the Sprite2D node
 			if enemy.instance.global_position.y > player.instance.global_position.y:
-				print('enemy under player')
-				#var enemy_sprite = enemy.instance.get_node("EnemySprite")  # Get the Sprite2D node
-				enemy_sprite.modulate = Color(0, 1, 0)  # Green color (R=0, G=1, B=0)
 				continue
-			if enemy.instance.global_position.x > player.instance.position.x - 15 and enemy.instance.global_position.x < player.instance.position.x + 15:
+			elif enemy.instance.global_position.x > player.instance.position.x - 5 and enemy.instance.global_position.x < player.instance.position.x + 5:
 				closestEnemy = enemy
-				enemy_sprite.modulate = Color(1, 0, 0)  # Green color (R=0, G=1, B=0)
 				break
-			enemy_sprite.modulate = Color(0, 1, 1)  # Green color (R=0, G=1, B=0)
 			
 
 		if closestEnemy != null:
 			var line = player.instance.get_node("Line2D") as Line2D
 			line.set_point_position(1, closestEnemy.instance.global_position - player.instance.global_position)
-			print('kill')
 			closestEnemy.isAlive = false
 			var explosion = explosion_scene.instantiate()
 			explosion.position = closestEnemy.instance.position

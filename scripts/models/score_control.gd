@@ -42,6 +42,7 @@ func delete_levels(_levels: Array[Global.Level]):
 func get_level_block(_level: Global.Level) -> ScoreBlock:
 	var result: ScoreBlock = null
 	for level_block in self.levels:
+		#print(level_block.level, level_block.score)
 		if level_block.level == _level:
 			result = level_block
 			break
@@ -54,6 +55,8 @@ func get_current_level() -> ScoreBlock:
 	return self.current_level
 	
 func get_score_by_level(_level: Global.Level) -> int:
+	#print(_level)
+	#print(len(self.levels))
 	var result: int = -1
 	for level_block in self.levels:
 		if level_block.level == _level:

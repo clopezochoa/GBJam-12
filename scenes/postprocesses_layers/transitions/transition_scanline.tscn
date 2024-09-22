@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://cmy418indsabt"]
+[gd_scene load_steps=9 format=3 uid="uid://cmy418indsabt"]
 
 [ext_resource type="Script" path="res://scripts/postprocesses_layers/transition_scanline.gd" id="1_gnucy"]
 [ext_resource type="Shader" path="res://shaders/postprocess_shaders/scanline_effect/scanline_effect_fade.gdshader" id="2_qfr3r"]
+[ext_resource type="AudioStream" uid="uid://b7dj2sjnibytm" path="res://assets/audio/sfx/defeat/defeat.wav" id="3_grxxe"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_lngs8"]
 shader = ExtResource("2_qfr3r")
@@ -115,3 +116,6 @@ grow_vertical = 2
 libraries = {
 "": SubResource("AnimationLibrary_tqhdu")
 }
+
+[node name="Defeat" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_grxxe")

@@ -60,7 +60,7 @@ texture = ExtResource("9_d45lw")
 one_shot = true
 
 [node name="shoot_cooldown_timer" type="Timer" parent="Player_2"]
-wait_time = 0.5
+wait_time = 0.1
 one_shot = true
 autostart = true
 
@@ -97,7 +97,7 @@ texture = ExtResource("9_d45lw")
 one_shot = true
 
 [node name="shoot_cooldown_timer" type="Timer" parent="Player_1"]
-wait_time = 0.5
+wait_time = 0.1
 one_shot = true
 autostart = true
 

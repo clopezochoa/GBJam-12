@@ -18,9 +18,11 @@ func _process(delta: float) -> void:
 
 
 func _on_player_player_update_position(player: PlayerInfo) -> void:
-	if player.instance.global_position.y < (farthestPosition + 60):
-		farthestPosition = player.instance.global_position.y - 60
+	if player.instance.global_position.y < (farthestPosition + 100):
+		farthestPosition = player.instance.global_position.y - 100
 		self.position.y = farthestPosition
 		#print(farthestPosition)
 		self.CameraMove.emit(farthestPosition)
-		$"Score".text = str(int(floor(abs(farthestPosition))))
+		var score = int(floor(abs(farthestPosition)))
+		$"Score".text = str(score)
+		Global.update_score_by_move(score)

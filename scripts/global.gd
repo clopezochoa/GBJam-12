@@ -1,6 +1,6 @@
 extends Node
 
-signal score_update
+signal score_update(_score: String)
 signal level_score_update
 signal finished()
 
@@ -15,7 +15,10 @@ func init_score_data() -> void:
 func update_score_by_move(_score: int) -> void:
 	if self.score.current_score < _score:
 		self.score.set_current(_score)
-		emit_signal("score_update", str(_score))
+		self.score_update.emit(str(_score))
+		
+func get_score():
+	return self.score.get_current()
 
 func emit_current_score() -> void:
 	var _current_score = 0
@@ -33,29 +36,37 @@ func reset_current_level_score() -> void:
 	self.score.set_current_level(null)
 	self.score.current_score = 0
 
-##If true->fade in else fade out
-func fade(fade_flag: bool):
+func fade(fade_flag: bool, play_music: bool = false):
 	var transition_screen = transition_pk.instantiate()
 	add_child(transition_screen)
 
 	if(fade_flag):
-		await transition_screen.start_fade_in()
+		await transition_screen.start_fade_in(play_music)
 	else:
 		await transition_screen.start_fade_out()
 		
 	emit_signal("finished")
 	return finished
 
+func drawSymbolsFromRange(_range: int, string: String):
+	var result: String = ""
+	for i in range(0, _range):
+		result += string
+	return result
+
+
 enum Scene {
 	INTRO,
 	MAIN_MENU,
-	LEVEL_1
+	LEVEL_1,
+	SCORE
 }
 
 var SceneName = {
 	Scene.INTRO: "intro",
 	Scene.MAIN_MENU: "main_menu",
 	Scene.LEVEL_1: "level_1",
+	Scene.SCORE: "score"
 }
 
 enum Layer {
